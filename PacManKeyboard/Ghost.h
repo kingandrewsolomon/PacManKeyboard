@@ -8,7 +8,7 @@ public:
 	int direction;
 
 	void move();
-	void set_direction();
+	void set_direction(int, int);
 	Ghost(int, int);
 	~Ghost();
 

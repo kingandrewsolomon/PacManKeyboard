@@ -1,7 +1,4 @@
 #include "pch.h"
-#include <cstdlib>
-#include "windows.h"
-#include <iostream>
 #include "GameController.h"
 
 GameController::GameController(Board *b, Player *p, Ghost *g)
@@ -14,7 +11,6 @@ GameController::GameController(Board *b, Player *p, Ghost *g)
 void GameController::initializeBoard()
 {
 	board = new Board();
-	board->initializeBoard();
 	loadPlayer();
 	draw_player();
 
@@ -29,46 +25,64 @@ void GameController::runGame()
 
 void GameController::update() 
 {
-	int direction = 1;
-	while (player->lives > 0) {
-		int temp = get_keypress();
-		if (temp > 0 && temp < 5)
-			direction = temp;
-		std::cout << "temp: " << temp << std::endl;
-		std::cout << "direction: " << direction << std::endl;
-		move_player(direction);
+	while (player->lives > 0) 
+	{
+		player->direction = get_keypress();
+		move_player();
+		move_ghost(player->xpos, player->ypos);
 		
 		draw_board();
 		draw_player();
 		draw_ghost();
-		Sleep(250);
+		check_status();
+		Sleep(500);
 	}
 }
 
 int GameController::get_keypress()
 {
-	short up = 1 * GetAsyncKeyState(VK_UP);
-	short right = 2 * GetAsyncKeyState(VK_RIGHT);
-	short down = 3 * GetAsyncKeyState(VK_DOWN);
-	short left = 4 * GetAsyncKeyState(VK_LEFT);
-
-	return up + right + down + left;
+	if (GetKeyState(VK_UP) & 0x8000) {
+		return 1;
+	}
+	if (GetKeyState(VK_RIGHT) & 0x8000) {
+		return 2;
+	}
+	if (GetKeyState(VK_DOWN) & 0x8000) {
+		return 3;
+	}
+	if (GetKeyState(VK_LEFT) & 0x8000) {
+		return 4;
+	}
+	return player->direction;
+	
 }
 
 void GameController::loadPlayer() 
 {
-	int y = rand() % board->rows;
-	int x = rand() % board->lengths[y];
+	int y = 1;
+	int x = 1;
 
-	player = new Player(x, y);
+	if (!player)
+		player = new Player(x, y);
+	else
+	{
+		player->xpos = x;
+		player->ypos = y;
+	}
 }
 
 void GameController::loadGhost()
 {
-	int y = rand() % board->rows;
-	int x = rand() % board->lengths[y];
+	int y = 3;
+	int x = 6;
 
-	ghost = new Ghost(x, y);
+	if(!ghost)
+		ghost = new Ghost(x, y);
+	else
+	{
+		ghost->xpos = x;
+		ghost->ypos = y;
+	}
 }
 
 void GameController::draw_board()
@@ -91,8 +105,6 @@ void GameController::draw_player()
 	{
 		LogiLedSetLightingForKeyWithKeyName(player->livesDisplay[i], 100, 50, 0);
 	}
-	std::cout << "x: " << player->xpos << std::endl;
-	std::cout << "y: " << player->ypos << std::endl;
 	LogiLedSetLightingForKeyWithKeyName(board->GameBoard[player->ypos][player->xpos], 100, 50, 0);
 }
 
@@ -101,9 +113,9 @@ void GameController::draw_ghost()
 	LogiLedSetLightingForKeyWithKeyName(board->GameBoard[ghost->ypos][ghost->xpos], 100, 0, 0);
 }
 
-void GameController::move_player(int direction)
+void GameController::move_player()
 {
-	switch (direction)
+	switch (player->direction)
 	{
 	case 1:
 		if (player->ypos - 1 < 0)
@@ -123,8 +135,52 @@ void GameController::move_player(int direction)
 		break;
 	}
 
-	player->move(direction);
+	player->move();
 	board->points[player->ypos][player->xpos] = 0;
+}
+
+void GameController::move_ghost(int playerX, int playerY)
+{
+	ghost->set_direction(playerX, playerY);
+
+	switch (ghost->direction)
+	{
+	case 1:
+		if (ghost->ypos - 1 < 0)
+			ghost->ypos = this->board->rows;
+		break;
+	case 2:
+		if (ghost->xpos + 1 == this->board->lengths[ghost->ypos])
+			ghost->xpos = -1;
+		break;
+	case 3:
+		if (ghost->ypos + 1 == this->board->rows)
+			ghost->ypos = -1;
+		break;
+	case 4:
+		if (ghost->xpos - 1 < 0)
+			ghost->xpos = this->board->lengths[ghost->ypos];
+		break;
+	}
+	ghost->move();
+}
+
+void GameController::check_status()
+{
+	if (!board->hasPoints())
+	{
+		board->completed(player->xpos, player->ypos);
+		initializeBoard();
+		return;
+	}
+	if (player->xpos == ghost->xpos && player->ypos == ghost->ypos)
+	{
+		board->clear();
+		board->flash(player->xpos, player->ypos, 300, 50);
+		player->died();
+		loadPlayer();
+		loadGhost();
+	}
 }
 
 GameController::~GameController()

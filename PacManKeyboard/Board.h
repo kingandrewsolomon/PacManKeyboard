@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include "windows.h"
 #include <LogitechLEDLib.h>
 
 class Board
@@ -11,6 +12,10 @@ public:
 	int lengths[4] = { 14, 14, 13, 12 };
 	Board();
 	void initializeBoard(); 
+	void clear();
+	void flash(int, int, int, int);
+	bool hasPoints();
+	void completed(int, int);
 	~Board();
 
 private:
