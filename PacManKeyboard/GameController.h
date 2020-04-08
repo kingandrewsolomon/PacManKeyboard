@@ -1,12 +1,11 @@
 #pragma once
 #include "pch.h"
-#include "Board.h"
 #include "Player.h"
 #include "Ghost.h"
+#include "Board.h"
 #include <cstdlib>
 #include "windows.h"
 #include <iostream>
-#include <LogitechLEDLib.h>
 
 class GameController
 {
@@ -22,6 +21,7 @@ private:
 	Board *board;
 	Player *player;
 	Ghost *ghost;
+	int game_speed;
 	void update();
 	void draw_board();
 	void draw_player();

@@ -1,7 +1,5 @@
 #include "pch.h"
-#include <cstdlib>
 #include "Ghost.h"
-#include <LogitechLEDLib.h>
 
 Ghost::Ghost(int x, int y)
 {

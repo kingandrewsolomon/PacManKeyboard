@@ -2,15 +2,10 @@
 //
 
 #include "pch.h"
-#include "Ghost.h"
-#include "Player.h"
-#include "Board.h"
 #include "GameController.h"
 #include "windows.h"
 #include <iostream>
 #include <LogitechLEDLib.h>
-#pragma warning(disable : 4996)
-#pragma warning(disable : 4244)
 
 GameController *gc;
 Board * b;
@@ -41,7 +36,7 @@ int main()
 
 	
 	playPacMan();
-	_sleep(4000);
+	Sleep(4000);
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

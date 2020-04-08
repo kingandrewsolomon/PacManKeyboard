@@ -6,6 +6,7 @@ GameController::GameController(Board *b, Player *p, Ghost *g)
 	board = b;
 	player = p;
 	ghost = g;
+	game_speed = 500;
 }
 
 void GameController::initializeBoard()
@@ -35,7 +36,7 @@ void GameController::update()
 		draw_player();
 		draw_ghost();
 		check_status();
-		Sleep(500);
+		Sleep(game_speed);
 	}
 }
 
@@ -89,7 +90,7 @@ void GameController::draw_board()
 {
 	for (int i = 0; i < board->rows; i++)
 	{
-		for (int j = 0; j < board->lengths[i]; j++)
+		for (int j = 0; j < board->lengths; j++)
 		{
 			if(board->points[i][j] == 1)
 				LogiLedSetLightingForKeyWithKeyName(board->GameBoard[i][j], 100, 100, 100);
@@ -122,7 +123,7 @@ void GameController::move_player()
 			player->ypos = this->board->rows;
 		break;
 	case 2:
-		if (player->xpos + 1 == this->board->lengths[player->ypos])
+		if (player->xpos + 1 == this->board->lengths)
 			player->xpos = -1;
 		break;
 	case 3:
@@ -131,7 +132,7 @@ void GameController::move_player()
 		break;
 	case 4:
 		if (player->xpos - 1 < 0)
-			player->xpos = this->board->lengths[player->ypos];
+			player->xpos = this->board->lengths;
 		break;
 	}
 
@@ -150,7 +151,7 @@ void GameController::move_ghost(int playerX, int playerY)
 			ghost->ypos = this->board->rows;
 		break;
 	case 2:
-		if (ghost->xpos + 1 == this->board->lengths[ghost->ypos])
+		if (ghost->xpos + 1 == this->board->lengths)
 			ghost->xpos = -1;
 		break;
 	case 3:
@@ -159,7 +160,7 @@ void GameController::move_ghost(int playerX, int playerY)
 		break;
 	case 4:
 		if (ghost->xpos - 1 < 0)
-			ghost->xpos = this->board->lengths[ghost->ypos];
+			ghost->xpos = this->board->lengths;
 		break;
 	}
 	ghost->move();
@@ -167,16 +168,19 @@ void GameController::move_ghost(int playerX, int playerY)
 
 void GameController::check_status()
 {
+	// if level completed
 	if (!board->hasPoints())
 	{
 		board->completed(player->xpos, player->ypos);
+		game_speed -= 50;
 		initializeBoard();
 		return;
 	}
+	//player died
 	if (player->xpos == ghost->xpos && player->ypos == ghost->ypos)
 	{
 		board->clear();
-		board->flash(player->xpos, player->ypos, 300, 50);
+		board->flash(player->xpos, player->ypos, 500, 50);
 		player->died();
 		loadPlayer();
 		loadGhost();
